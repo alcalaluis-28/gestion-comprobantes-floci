@@ -1,0 +1,490 @@
+{% extends "base.html" %}
+
+{% block title %}Gestión de Comprobantes – Plataforma Floci AWS{% endblock %}
+
+{% block content %}
+<div class="app-container">
+
+  <!-- 
+       BARRA LATERAL (SIDEBAR)
+   -->
+  <aside class="app-sidebar" id="app-sidebar">
+    <div class="sidebar-header">
+      <div class="brand-badge">
+        <i class="fa-solid fa-cloud"></i> Floci AWS Local
+      </div>
+      <h1 class="brand-title">
+        <i class="fa-solid fa-receipt"></i>
+        <span>Gestión de Comprobantes</span>
+      </h1>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">Navegación</div>
+      <a href="#seccion-comprobantes" class="sidebar-nav-link is-active" id="nav-comprobantes">
+        <span class="link-left">
+          <i class="fa-solid fa-file-invoice"></i>
+          <span>Comprobantes</span>
+        </span>
+        <span class="tag is-rounded is-small" id="sb-nav-badge">0</span>
+      </a>
+      <a href="#seccion-resumen" class="sidebar-nav-link" id="nav-resumen">
+        <span class="link-left">
+          <i class="fa-solid fa-chart-pie"></i>
+          <span>Resumen rápido</span>
+        </span>
+      </a>
+
+      <!-- Indicadores resumidos en el sidebar -->
+      <div class="sidebar-indicators">
+        <div class="nav-section-title" style="padding:0; margin-bottom: 0.5rem;">Indicadores en vivo</div>
+        <div class="indicator-row">
+          <span><i class="fa-solid fa-list-check" style="width:16px;"></i> Registros</span>
+          <span class="indicator-chip" id="sb-registros">0</span>
+        </div>
+        <div class="indicator-row">
+          <span><i class="fa-solid fa-store" style="width:16px;"></i> Tiendas</span>
+          <span class="indicator-chip" id="sb-tiendas">0</span>
+        </div>
+        <div class="indicator-row">
+          <span><i class="fa-solid fa-images" style="width:16px;"></i> Imágenes S3</span>
+          <span class="indicator-chip" id="sb-imagenes">0</span>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Perfil de usuario fijado en la barra lateral -->
+    <div class="sidebar-user">
+      <div class="user-avatar" title="Usuario Administrador">LA</div>
+      <div class="user-details">
+        <p class="user-name">Luis Alcala</p>
+        <span class="user-role">
+          <span class="status-dot"></span> Operador Principal
+        </span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- 
+       CONTENIDO PRINCIPAL
+  -->
+  <main class="app-main">
+
+    <!-- Navbar superior para dispositivos móviles/tablets -->
+    <div class="mobile-navbar">
+      <div style="font-weight: 800; font-size: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+        <i class="fa-solid fa-receipt"></i> Gestión de Comprobantes
+      </div>
+      <button class="button is-small is-ghost has-text-white" id="btn-toggle-sidebar" aria-label="Menú">
+        <i class="fa-solid fa-bars fa-lg"></i>
+      </button>
+    </div>
+
+    <!-- Banner con ilustración de comprobantes -->
+    <section class="hero-banner">
+      <div class="hero-content">
+        <div class="hero-badge">
+          <i class="fa-solid fa-bolt"></i> Simulación Textract + S3 + DynamoDB
+        </div>
+        <h2 class="hero-title">Automatización y Control de Comprobantes</h2>
+        <p class="hero-subtitle">
+          Registro inteligente de boletas y facturas para las sedes de Chincha, Pisco e Ica con persistencia AWS emulada localmente en Floci.
+        </p>
+      </div>
+
+      <!-- Ilustración Vectorial Decorativa: Carpeta y Comprobantes -->
+      <div class="hero-illustration" aria-hidden="true">
+        <svg viewBox="0 0 240 160" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: 100%;">
+          <!-- Carpeta de fondo -->
+          <path d="M20 50C20 44.4772 24.4772 40 30 40H80L95 55H210C215.523 55 220 59.4772 220 65V135C220 140.523 215.523 145 210 145H30C24.4772 145 20 140.523 20 135V50Z" fill="#F4F0E8" fill-opacity="0.25"/>
+          <path d="M20 70H220V135C220 140.523 215.523 145 210 145H30C24.4772 145 20 140.523 20 135V70Z" fill="#8BA888" fill-opacity="0.35"/>
+          <!-- Comprobante 1 (Atrás - Factura) -->
+          <g transform="translate(65, 20) rotate(-6)">
+            <rect width="85" height="110" rx="6" fill="#FAF9F5" filter="drop-shadow(0 4px 10px rgba(0,0,0,0.15))"/>
+            <rect x="10" y="12" width="40" height="6" rx="3" fill="#1B3B2B"/>
+            <rect x="10" y="24" width="65" height="3" rx="1.5" fill="#E3DDD2"/>
+            <rect x="10" y="32" width="65" height="3" rx="1.5" fill="#E3DDD2"/>
+            <rect x="10" y="40" width="45" height="3" rx="1.5" fill="#E3DDD2"/>
+            <rect x="10" y="55" width="65" height="18" rx="3" fill="#FBEEE8"/>
+            <rect x="15" y="60" width="35" height="4" rx="2" fill="#C85A32"/>
+            <rect x="15" y="67" width="20" height="3" rx="1.5" fill="#C85A32" fill-opacity="0.6"/>
+            <!-- Sello -->
+            <circle cx="65" cy="95" r="10" stroke="#C85A32" stroke-width="2" stroke-dasharray="3 2" fill="none"/>
+            <text x="59" y="98" font-size="7" font-weight="bold" fill="#C85A32">OK</text>
+          </g>
+          <!-- Comprobante 2 (Adelante - Boleta) -->
+          <g transform="translate(100, 30) rotate(5)">
+            <rect width="85" height="110" rx="6" fill="#FFFFFF" filter="drop-shadow(0 6px 14px rgba(0,0,0,0.2))"/>
+            <rect x="10" y="12" width="45" height="6" rx="3" fill="#8BA888"/>
+            <rect x="10" y="24" width="65" height="3" rx="1.5" fill="#E3DDD2"/>
+            <rect x="10" y="32" width="65" height="3" rx="1.5" fill="#E3DDD2"/>
+            <rect x="10" y="40" width="55" height="3" rx="1.5" fill="#E3DDD2"/>
+            <rect x="10" y="52" width="65" height="26" rx="3" fill="#EBF2EC"/>
+            <rect x="15" y="58" width="55" height="4" rx="2" fill="#1B3B2B"/>
+            <rect x="15" y="66" width="35" height="3" rx="1.5" fill="#8BA888"/>
+            <!-- Checkmark badge -->
+            <circle cx="65" cy="95" r="10" fill="#1B3B2B"/>
+            <path d="M60 95L63.5 98.5L70 91.5" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </g>
+          <!-- Nube AWS decorativa -->
+          <g transform="translate(160, 95)">
+            <ellipse cx="25" cy="18" rx="20" ry="12" fill="#F4F0E8" fill-opacity="0.9"/>
+            <circle cx="16" cy="14" r="11" fill="#F4F0E8" fill-opacity="0.9"/>
+            <circle cx="32" cy="12" r="13" fill="#F4F0E8" fill-opacity="0.9"/>
+            <path d="M22 18L26 14L30 18M26 15V23" stroke="#1B3B2B" stroke-width="2" stroke-linecap="round"/>
+          </g>
+        </svg>
+      </div>
+    </section>
+
+    <!--
+         SECCIÓN: RESUMEN RÁPIDO (INDICADORES DINÁMICOS BASADOS EN DATOS REALES)
+    -->
+    <section id="seccion-resumen" class="mb-5">
+      <div class="metrics-grid">
+        <!-- Tarjeta 1: Total Comprobantes -->
+        <div class="metric-card">
+          <div>
+            <div class="metric-label">Total Comprobantes</div>
+            <div class="metric-value" id="card-total-registros">0</div>
+            <div class="metric-sub">
+              <i class="fa-solid fa-database"></i> Registros en DynamoDB
+            </div>
+          </div>
+          <div class="metric-icon-box is-forest">
+            <i class="fa-solid fa-receipt"></i>
+          </div>
+        </div>
+
+        <!-- Tarjeta 2: Tiendas Activas -->
+        <div class="metric-card">
+          <div>
+            <div class="metric-label">Tiendas con Registros</div>
+            <div class="metric-value" id="card-total-tiendas">0</div>
+            <div class="metric-sub">
+              <i class="fa-solid fa-map-pin"></i> De 3 sedes regionales
+            </div>
+          </div>
+          <div class="metric-icon-box is-sage">
+            <i class="fa-solid fa-store"></i>
+          </div>
+        </div>
+
+        <!-- Tarjeta 3: Imágenes en S3 -->
+        <div class="metric-card">
+          <div>
+            <div class="metric-label">Imágenes Almacenadas</div>
+            <div class="metric-value" id="card-total-imagenes">0</div>
+            <div class="metric-sub">
+              <i class="fa-solid fa-cloud-arrow-up"></i> Bucket comprobantes-floci
+            </div>
+          </div>
+          <div class="metric-icon-box is-terracota">
+            <i class="fa-solid fa-image"></i>
+          </div>
+        </div>
+
+        <!-- Tarjeta 4: Desglose Regional -->
+        <div class="metric-card">
+          <div style="width: 100%;">
+            <div class="metric-label">Distribución Regional</div>
+            <div class="store-pills" id="contenedor-desglose">
+              <span class="store-pill">
+                <i class="fa-solid fa-location-dot"></i> Chincha: <strong id="card-chincha">0</strong>
+              </span>
+              <span class="store-pill">
+                <i class="fa-solid fa-location-dot"></i> Pisco: <strong id="card-pisco">0</strong>
+              </span>
+              <span class="store-pill">
+                <i class="fa-solid fa-location-dot"></i> Ica: <strong id="card-ica">0</strong>
+              </span>
+            </div>
+            <div class="metric-sub mt-2">
+              <i class="fa-solid fa-arrows-rotate"></i> Actualización en tiempo real
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 
+         SECCIÓN: FORMULARIO DE REGISTRO
+     -->
+    <section class="content-card" id="seccion-formulario">
+      <div class="card-header-custom">
+        <h3 class="card-header-title-custom">
+          <i class="fa-solid fa-file-circle-plus"></i> Registrar Nuevo Comprobante
+        </h3>
+        <span class="tag is-rounded is-light" style="background-color: var(--color-verde-salvia-light); color: var(--color-verde-salvia-dark); font-weight:700;">
+          <i class="fa-solid fa-microchip" style="margin-right: 4px;"></i> Textract Simulado
+        </span>
+      </div>
+
+      <div class="card-body-custom">
+        <form id="form-comprobante" autocomplete="off" enctype="multipart/form-data">
+
+          <!-- Selector de Tipo de Comprobante (Segmented Control) -->
+          <div class="segmented-control" role="radiogroup" aria-label="Tipo de comprobante">
+            <div class="segmented-option is-selected" data-tipo="boleta" id="opt-boleta">
+              <i class="fa-solid fa-receipt"></i> Boleta de Venta
+            </div>
+            <div class="segmented-option" data-tipo="factura" id="opt-factura">
+              <i class="fa-solid fa-file-invoice-dollar"></i> Factura Electrónica
+            </div>
+          </div>
+          <input type="hidden" name="tipo" id="input-tipo" value="boleta">
+
+          <div class="columns is-multiline">
+            <!-- Fecha de Emisión -->
+            <div class="column is-4-desktop is-6-tablet">
+              <div class="field">
+                <label class="label" for="input-fecha">
+                  <i class="fa-regular fa-calendar" style="color: var(--color-verde-salvia);"></i> Fecha de Emisión *
+                </label>
+                <div class="control has-icons-left">
+                  <input class="input" type="date" name="fecha" id="input-fecha" required>
+                  <span class="icon is-small is-left">
+                    <i class="fa-solid fa-calendar-days"></i>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Usuario / Operador -->
+            <div class="column is-4-desktop is-6-tablet">
+              <div class="field">
+                <label class="label" for="input-usuario">
+                  <i class="fa-regular fa-user" style="color: var(--color-verde-salvia);"></i> Usuario Responsable *
+                </label>
+                <div class="control has-icons-left">
+                  <input class="input" type="text" name="usuario" id="input-usuario" value="Luis Alcala" placeholder="Ej. Luis Alcala" required>
+                  <span class="icon is-small is-left">
+                    <i class="fa-solid fa-user-check"></i>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tienda / Sede -->
+            <div class="column is-4-desktop is-12-tablet">
+              <div class="field">
+                <label class="label" for="input-tienda">
+                  <i class="fa-solid fa-shop" style="color: var(--color-verde-salvia);"></i> Tienda / Sede *
+                </label>
+                <div class="control has-icons-left">
+                  <div class="select is-fullwidth">
+                    <select name="tienda" id="input-tienda" required>
+                      <option value="Chincha" selected>Chincha</option>
+                      <option value="Pisco">Pisco</option>
+                      <option value="Ica">Ica</option>
+                    </select>
+                  </div>
+                  <span class="icon is-small is-left">
+                    <i class="fa-solid fa-location-dot"></i>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Observación Opcional -->
+            <div class="column is-12">
+              <div class="field">
+                <label class="label" for="input-observacion">
+                  <i class="fa-regular fa-comment-dots" style="color: var(--color-verde-salvia);"></i> Observación (Opcional)
+                </label>
+                <div class="control">
+                  <input class="input" type="text" name="observacion" id="input-observacion" placeholder="Notas sobre el comprobante (ej. Compra de suministros sede central)">
+                </div>
+              </div>
+            </div>
+
+            <!-- Subida de Imagen con Dropzone y Preview interactivo -->
+            <div class="column is-12">
+              <div class="field">
+                <label class="label">
+                  <i class="fa-solid fa-camera" style="color: var(--color-verde-salvia);"></i> Imagen del Comprobante (JPG / JPEG / PNG) *
+                </label>
+                
+                <div class="upload-dropzone" id="dropzone">
+                  <input type="file" id="input-imagen" name="imagen" accept=".jpg,.jpeg,.png,image/jpeg,image/png" required>
+                  <div class="upload-icon">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                  </div>
+                  <div class="upload-prompt">Arrastra la imagen o haz clic para seleccionarla</div>
+                  <div class="upload-hint">Formatos soportados: JPG, JPEG y PNG (Máximo 10 MB)</div>
+                </div>
+
+                <!-- Preview interactivo cuando se selecciona imagen -->
+                <div class="image-preview-box" id="preview-box">
+                  <img src="" alt="Vista previa del comprobante" class="preview-thumb" id="preview-img">
+                  <div class="preview-meta">
+                    <div class="preview-filename" id="preview-filename">archivo.jpg</div>
+                    <div class="preview-size" id="preview-size">0 KB</div>
+                  </div>
+                  <button type="button" class="button is-small is-danger is-light" id="btn-remover-imagen" title="Remover archivo">
+                    <i class="fa-solid fa-trash-can"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Botones de Acción del Formulario -->
+          <div class="is-flex is-justify-content-flex-end is-align-items-center" style="gap: 0.75rem; margin-top: 1.5rem;">
+            <button type="button" class="button is-light" id="btn-limpiar-form">
+              <i class="fa-solid fa-eraser" style="margin-right: 6px;"></i> Limpiar
+            </button>
+            <button type="submit" class="button btn-primary-custom" id="btn-submit-comprobante">
+              <i class="fa-solid fa-floppy-disk" style="margin-right: 6px;"></i> Procesar y Guardar Comprobante
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!--
+         SECCIÓN: TABLA DE COMPROBANTES REGISTRADOS
+    -->
+    <section class="content-card" id="seccion-comprobantes">
+      <div class="card-header-custom">
+        <h3 class="card-header-title-custom">
+          <i class="fa-solid fa-table-list"></i> Comprobantes Registrados
+        </h3>
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <span class="tag is-rounded" style="background-color: var(--color-verde-bosque); color: #FFFFFF; font-weight:700;" id="badge-total-tabla">
+            0 registros
+          </span>
+          <button class="button is-small is-ghost" id="btn-refrescar-tabla" title="Refrescar listado">
+            <i class="fa-solid fa-arrows-rotate"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body-custom" style="padding: 0; overflow-x: auto;">
+        <table class="table-custom" id="tabla-comprobantes">
+          <thead>
+            <tr>
+              <th>Comprobante</th>
+              <th>Fecha</th>
+              <th>Usuario</th>
+              <th>Tienda</th>
+              <th>Importes (S/)</th>
+              <th>Observación</th>
+              <th style="text-align: right;">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-comprobantes">
+            <!-- Rellenado dinámicamente con JavaScript -->
+          </tbody>
+        </table>
+
+        <!-- Estado vacío cuando no hay registros -->
+        <div class="empty-state" id="empty-state" style="display: none;">
+          <div class="empty-icon">
+            <i class="fa-solid fa-folder-open"></i>
+          </div>
+          <div class="empty-title">Aún no hay comprobantes registrados</div>
+          <p class="empty-desc">
+            Completa el formulario superior para almacenar la imagen en S3, generar el JSON simulado con Textract y persistir el registro en DynamoDB.
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!--
+     MODALES BULMA
+ -->
+
+<!-- 1. Modal: Vista Previa de Imagen de S3 -->
+<div class="modal" id="modal-imagen">
+  <div class="modal-background" data-close-modal></div>
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <p class="modal-card-title">
+        <i class="fa-solid fa-image" style="margin-right: 8px;"></i>
+        <span id="modal-img-titulo">Imagen del Comprobante</span>
+      </p>
+      <button class="delete" aria-label="close" data-close-modal></button>
+    </header>
+    <section class="modal-card-body has-text-centered">
+      <div id="modal-img-loader" class="py-5" style="display: none;">
+        <i class="fa-solid fa-circle-notch fa-spin fa-2x" style="color: var(--color-verde-salvia);"></i>
+        <p class="mt-2" style="font-size: 0.85rem; color: var(--color-texto-muted);">Cargando imagen desde S3...</p>
+      </div>
+      <img src="" alt="Comprobante en S3" class="modal-image-preview" id="modal-img-element">
+      <p class="mt-3" style="font-size: 0.78rem; color: var(--color-texto-muted);" id="modal-img-s3key"></p>
+    </section>
+    <footer class="modal-card-foot">
+      <a href="#" target="_blank" class="button is-small is-light" id="btn-descargar-imagen">
+        <i class="fa-solid fa-arrow-up-right-from-square" style="margin-right: 5px;"></i> Abrir completa
+      </a>
+      <button class="button is-small btn-primary-custom" data-close-modal>Cerrar</button>
+    </footer>
+  </div>
+</div>
+
+<!-- 2. Modal: Visor JSON de Textract Simulado -->
+<div class="modal" id="modal-json">
+  <div class="modal-background" data-close-modal></div>
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <p class="modal-card-title">
+        <i class="fa-solid fa-code" style="margin-right: 8px;"></i>
+        <span id="modal-json-titulo">Extracción Estructurada Textract</span>
+      </p>
+      <button class="delete" aria-label="close" data-close-modal></button>
+    </header>
+    <section class="modal-card-body">
+      <div class="is-flex is-justify-content-between is-align-items-center mb-3">
+        <span class="tag is-success is-light" style="font-weight: 700;">
+          <i class="fa-solid fa-circle-check" style="margin-right: 5px;"></i> Simulación Textract Validada
+        </span>
+        <button class="button is-small is-light" id="btn-copiar-json">
+          <i class="fa-regular fa-copy" style="margin-right: 5px;"></i> Copiar JSON
+        </button>
+      </div>
+      <pre class="json-viewer-container"><code id="modal-json-content">Cargando...</code></pre>
+    </section>
+    <footer class="modal-card-foot">
+      <button class="button is-small btn-primary-custom" data-close-modal>Entendido</button>
+    </footer>
+  </div>
+</div>
+
+<!-- 3. Modal: Confirmación de Eliminación Coordinada (DynamoDB + S3) -->
+<div class="modal" id="modal-eliminar">
+  <div class="modal-background" data-close-modal></div>
+  <div class="modal-card" style="max-width: 480px;">
+    <header class="modal-card-head" style="background-color: var(--color-terracota);">
+      <p class="modal-card-title has-text-white">
+        <i class="fa-solid fa-triangle-exclamation" style="margin-right: 8px;"></i>
+        Confirmar Eliminación
+      </p>
+      <button class="delete" aria-label="close" data-close-modal></button>
+    </header>
+    <section class="modal-card-body">
+      <p style="font-size: 0.95rem; font-weight: 600; color: var(--color-texto-principal); margin-bottom: 0.5rem;">
+        ¿Deseas eliminar definitivamente este comprobante?
+      </p>
+      <div style="background-color: var(--color-terracota-light); border: 1px solid rgba(200,90,50,0.25); border-radius: 8px; padding: 0.85rem; font-size: 0.85rem; color: #8A3314; margin-bottom: 1rem;">
+        <i class="fa-solid fa-circle-info"></i> Esta acción eliminará el registro de <strong>DynamoDB</strong> y borrará permanentemente la imagen asociada del bucket <strong>S3</strong>.
+      </div>
+      <div style="font-size: 0.85rem; color: var(--color-texto-muted);" id="modal-eliminar-detalle">
+        <!-- Detalles del comprobante a borrar -->
+      </div>
+    </section>
+    <footer class="modal-card-foot">
+      <button class="button is-small is-light" data-close-modal>Cancelar</button>
+      <button class="button is-small btn-terracota-custom" id="btn-confirmar-eliminar">
+        <i class="fa-solid fa-trash-can" style="margin-right: 5px;"></i> Sí, eliminar comprobante
+      </button>
+    </footer>
+  </div>
+</div>
+
+<!-- Contenedor flotante para Notificaciones Toast -->
+<div class="toast-container" id="toast-container"></div>
+{% endblock %}

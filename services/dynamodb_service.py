@@ -9,9 +9,10 @@ from config import Config
 
 def recurso_dynamodb():
     """Retorna recurso Boto3 DynamoDB configurado para Floci."""
+    endpoint = Config.AWS_ENDPOINT_URL or "http://localhost:4566"
     return boto3.resource(
         "dynamodb",
-        endpoint_url=Config.AWS_ENDPOINT_URL,
+        endpoint_url=endpoint,
         region_name=Config.AWS_REGION,
         aws_access_key_id=Config.AWS_ACCESS_KEY_ID,
         aws_secret_access_key=Config.AWS_SECRET_ACCESS_KEY,
@@ -20,9 +21,10 @@ def recurso_dynamodb():
 
 def cliente_dynamodb():
     """Retorna cliente Boto3 DynamoDB de bajo nivel."""
+    endpoint = Config.AWS_ENDPOINT_URL or "http://localhost:4566"
     return boto3.client(
         "dynamodb",
-        endpoint_url=Config.AWS_ENDPOINT_URL,
+        endpoint_url=endpoint,
         region_name=Config.AWS_REGION,
         aws_access_key_id=Config.AWS_ACCESS_KEY_ID,
         aws_secret_access_key=Config.AWS_SECRET_ACCESS_KEY,

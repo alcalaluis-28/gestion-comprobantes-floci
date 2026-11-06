@@ -13,9 +13,10 @@ MIMETYPES_PERMITIDOS = {"image/jpeg", "image/png"}
 
 def cliente_s3():
     """Retorna cliente Boto3 S3 configurado para Floci."""
+    endpoint = Config.AWS_ENDPOINT_URL or "http://localhost:4566"
     return boto3.client(
         "s3",
-        endpoint_url=Config.AWS_ENDPOINT_URL,
+        endpoint_url=endpoint,
         region_name=Config.AWS_REGION,
         aws_access_key_id=Config.AWS_ACCESS_KEY_ID,
         aws_secret_access_key=Config.AWS_SECRET_ACCESS_KEY,

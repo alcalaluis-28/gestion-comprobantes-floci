@@ -164,7 +164,7 @@ floci doctor
 Floci debe encontrarse en ejecución y responder en el endpoint local:
 
 ```text
-http://localhost.floci.io:4566
+http://localhost:4566
 ```
 
 ### 2️⃣ Crear el entorno virtual de Python
@@ -199,7 +199,7 @@ Configuración local utilizada:
 
 ```ini
 SECRET_KEY=dev-cambiar-esta-clave
-AWS_ENDPOINT_URL=http://localhost.floci.io:4566
+AWS_ENDPOINT_URL=http://localhost:4566
 AWS_ACCESS_KEY_ID=test
 AWS_SECRET_ACCESS_KEY=test
 AWS_DEFAULT_REGION=us-east-1

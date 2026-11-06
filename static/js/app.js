@@ -293,9 +293,16 @@ document.addEventListener("DOMContentLoaded", () => {
       const tipoTexto = esFactura ? "Factura" : "Boleta";
       const correlativo = c.numero_comprobante || (c.datos_textract?.comprobante?.numero_completo) || "S/N";
 
-      // Formatear montos
-      const totalNum = parseFloat(c.monto_total || 0).toFixed(2);
-      const igvNum = parseFloat(c.igv || 0).toFixed(2);
+      // Formatear montos priorizando los datos del comprobante/JSON
+      const totalVal = (c.monto_total !== undefined && c.monto_total !== null) ? c.monto_total : (c.datos_textract?.importes?.total || 0);
+      const igvVal = (c.igv !== undefined && c.igv !== null) ? c.igv : (c.datos_textract?.importes?.igv || 0);
+      const totalNum = parseFloat(totalVal).toFixed(2);
+      const igvNum = parseFloat(igvVal).toFixed(2);
+
+      // Fecha de emisión visible en documento vs fecha de registro del formulario
+      const fechaEmisionDoc = c.datos_textract?.comprobante?.fecha_emision || c.fecha_emision_documento || c.fecha || "";
+      const fechaFormulario = c.fecha || "";
+      const mostrarDobleFecha = fechaEmisionDoc && fechaFormulario && (fechaEmisionDoc !== fechaFormulario);
 
       // Observación
       const observacion = c.observacion ? escapeHtml(c.observacion) : '<span style="color:var(--color-texto-muted); font-style:italic;">Sin observación</span>';
@@ -311,7 +318,10 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
           </td>
           <td>
-            <span style="font-weight:600;">${escapeHtml(c.fecha || "")}</span>
+            <div style="line-height:1.25;">
+              <strong style="color:var(--color-verde-bosque);">${escapeHtml(fechaEmisionDoc)}</strong>
+              ${mostrarDobleFecha ? `<div style="font-size:0.73rem; color:var(--color-texto-muted);" title="Fecha ingresada en el formulario">Reg: ${escapeHtml(fechaFormulario)}</div>` : ''}
+            </div>
           </td>
           <td>
             <span style="color:var(--color-texto-principal);">${escapeHtml(c.usuario || "")}</span>

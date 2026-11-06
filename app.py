@@ -198,6 +198,7 @@ def api_crear_comprobante():
             "monto_total": datos_textract["importes"]["total"],
             "igv": datos_textract["importes"]["igv"],
             "subtotal": datos_textract["importes"]["subtotal"],
+            "fecha_emision_documento": datos_textract["comprobante"]["fecha_emision"],
             "fecha_registro": datetime.now(timezone.utc).isoformat(),
         }
 
@@ -232,15 +233,18 @@ def api_obtener_json_comprobante(id_comprobante):
         if not comprobante:
             return jsonify({"success": False, "error": f"Comprobante con ID '{id_comprobante}' no encontrado."}), 404
 
+        datos_textract = comprobante.get("datos_textract", {})
         return jsonify({
             "success": True,
             "id": comprobante.get("id"),
-            "datos_textract": comprobante.get("datos_textract", {}),
+            "datos_textract": datos_textract,
             "metadatos": {
                 "tipo": comprobante.get("tipo"),
                 "tienda": comprobante.get("tienda"),
-                "fecha": comprobante.get("fecha"),
+                "fecha_formulario": comprobante.get("fecha"),
+                "fecha_emision_documento": datos_textract.get("comprobante", {}).get("fecha_emision") or comprobante.get("fecha_emision_documento"),
                 "usuario": comprobante.get("usuario"),
+                "observacion": comprobante.get("observacion"),
                 "s3_key": comprobante.get("s3_key"),
                 "fecha_registro": comprobante.get("fecha_registro"),
             },
